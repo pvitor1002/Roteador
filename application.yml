@@ -1,1 +1,29 @@
-server.port: 8080
+server.port: 8081
+spring:
+  application:
+    name: Roteador
+  cloud:
+    gateway:
+      default-filters:
+        - name: GenericGlobalFilter
+      routes:
+        - id: transacaoPost
+          uri: http://localhost:8080
+          predicates:
+            - Path=/transacoes/v1/**
+            - Method=POST
+            - Canary=Transacao
+          filters:
+            - name: TransacaoPostPreFilter
+            - RewritePath=/transacoes/v1/transacao,/transacoes/v1/transferir
+            - name: TransacaoPostPosFilter
+            - AddResponseHeader=Content-Type,application/json;charset=utf-8
+        - id: contingenciaPost
+          uri: http://localhost:8080
+          predicates:
+            - Path=/transacoes/v1/**
+            - Method=POST
+            - Canary=Contingencia
+          filters:
+            - name: ContingenciaPostFilter
+            - AddResponseHeader=Content-Type,application/json;charset=utf-8
